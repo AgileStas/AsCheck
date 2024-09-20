@@ -1,0 +1,22 @@
+{% block content %}
+<h1>Hosts List</h1>
+  {% if host_list %}
+<table>
+    {% for host in host_list %}
+    <tr>
+        <td><a href="{{ host.get_absolute_url }}{{ host.pk }}">{{ host.hostname }}</a></td>
+	<td>{{ host.restriction }}</td>
+	<td>{{ host.serialnumber }}</td>
+	<td>{{ host.cs_manufacturer }}</td>
+	<td>{{ host.cs_model }}</td>
+	<td>{{ host.cs_systemfamily }}</td>
+	<td>{{ host.division }}</td>
+	<td>{{ host.owner }}</td>
+    </tr>
+    {% endfor %}
+</table>
+  {% else %}
+<p>There are no registered USB storage devices.</p>
+  {% endif %}
+{% endblock %}
+

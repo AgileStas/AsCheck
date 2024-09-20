@@ -1,0 +1,19 @@
+{% block content %}
+<h1>USB Storage Devices List</h1>
+  {% if usbstor_list %}
+<table>
+    {% for usd in usbstor_list %}
+    <tr>
+        <td><a href="{{ usd.get_absolute_url }}{{ usd.pk }}">{{ usd.regid }}</a></td>
+	<td>{{ usd.regnum }}</td>
+	<td>{{ usd.regdate }}</td>
+	<td>{{ usd.serialnum }}</td>
+	<td>{{ usd.divname }}</td>
+	<td>{{ usd.owner }}</td>
+    </tr>
+    {% endfor %}
+</table>
+  {% else %}
+<p>There are no registered USB storage devices.</p>
+  {% endif %}
+{% endblock %}
