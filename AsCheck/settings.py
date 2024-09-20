@@ -123,3 +123,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+    },
+}
+
+#STATIC_ROOT = BASE_DIR.joinpath('AsCheck').joinpath('static\\')
+STATIC_ROOT = BASE_DIR.joinpath('static')
+#print(STATIC_ROOT)
