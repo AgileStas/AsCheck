@@ -1,0 +1,21 @@
+{% block content %}
+{% if division_list %}
+<table>
+    <tr>
+        <th>Акроним</th>
+        <th>Назва</th>
+        <th>Активний</th>
+    </tr>
+    {% for d in division_list %}
+    <tr>
+        <td>{{ d.int_acro }}</td>
+        <td>{{ d.common_name }}</td>
+        <td>{{ d.active }}</td>
+    {% endfor %}
+    </tr>
+</table>
+{% else %}
+<p>There are no registered divisions.</p>
+{% endif %}
+<p><a href="add">Створити новий</a></p>
+{% endblock %}

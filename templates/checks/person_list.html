@@ -1,0 +1,25 @@
+{% block content %}
+{% if person_list %}
+<table>
+    <tr>
+        <th>Військове звання</th>
+        <th>Прізвище</th>
+        <th>Ім'я</th>
+        <th>По батькові</th>
+        <th>Номер телефону</th>
+    </tr>
+    {% for p in person_list %}
+    <tr>
+        <td>{{ p.military_rank }}</td>
+        <td>{{ p.family_name }}</td>
+        <td>{{ p.first_name }}</td>
+        <td>{{ p.middle_name }}</td>
+        <td>{{ p.phone_number }}</td>
+    {% endfor %}
+    </tr>
+</table>
+{% else %}
+<p>There are no registered persons.</p>
+{% endif %}
+<p><a href="add">Створити новий</a></p>
+{% endblock %}

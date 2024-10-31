@@ -1,0 +1,47 @@
+<html>
+    <head>
+    </head>
+    <body>
+        {% if csdict %}<div>HTTP Method: {{ csdict.httpmethod }}</div>
+        <table>
+            <tr>
+                <th>Hostname</th>
+                <th>Serial number</th>
+                <th>Manufacturer</th>
+                <th>Model</th>
+            </tr>
+            <tr>
+                <td>{{ csdict.hostname }}</td>
+                <td>{{ csdict.serialnumber }}</td>
+                <td>{{ csdict.manufacturer }}</td>
+                <td>{{ csdict.model }}</td>
+            </tr>
+        </table>
+
+        <p></p>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <table>
+                <tr>
+                    <td><input type="radio" name="cs_id" value="0" checked/></td>
+                    <td colspan="2">Cancel action</td>
+                </tr>
+                <tr>
+                    <td><input type="radio" name="cs_id" value="-1"/></td>
+                    <td colspan="2">Create new computer system</td>
+                </tr>
+                {% for csitem in csdict.csitems %}
+                <tr>
+                    <td><input type="radio" name="cs_id" value="{{ csitem.id }}"/></td>
+                    <td>{{ csitem.hostname }}</td>
+                    <td>{{ csitem.serialnumber }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            
+            <button type="submit">Create / Update / Cancel</button>
+        </form>
+        {% endif %}
+    </body>
+</html> 
