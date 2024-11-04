@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<!-- https://stackoverflow.com/questions/68716819/django-how-to-use-blocks-in-templates -->
+<html>
+    <head>
+        <meta charset="utf-8">
+
+        <title>{% block title %}{% endblock title %}</title>
+    </head>
+    <body>
+        {% block header %}
+        <h1>{% block pagename %}{% endblock pagename %}</h1>
+        <nav>
+        {% block menu %}
+        {% include 'checks/partials/_menu.html' %}
+        {% endblock menu %}
+        </nav>
+        {% endblock header %}
+
+        {% block content %}{% endblock content %}
+    </body>
+</html>

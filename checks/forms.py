@@ -1,6 +1,19 @@
 from django import forms
 
-from .models import Division, Host, Person
+from .models import DataRestriction, Division, Host, Person, UsbStor
+
+class DivisionForm(forms.ModelForm):
+    class Meta:
+        model = Division
+        fields = (
+            "int_acro",
+            "common_name",
+            "active",
+                )
+
+    int_acro = forms.CharField(max_length=10)
+    common_name = forms.CharField(max_length=500)
+    active = forms.BooleanField()
 
 class DivisionChoiceField(forms.ModelChoiceField):
     def __init__(self, *args, **kwargs):
@@ -30,6 +43,7 @@ class HostForm(forms.ModelForm):
             "owner",
             "person",
             "note",
+            # "usbstor_list",
                 )
 
     hostname = forms.CharField(max_length=100)
@@ -38,8 +52,61 @@ class HostForm(forms.ModelForm):
     cs_manufacturer = forms.CharField(max_length=100)
     cs_model = forms.CharField(max_length=100)
     cs_systemfamily = forms.CharField(max_length=100, required=False)
-    restriction = forms.ChoiceField(required=False, choices=Host.Restriction)
+    restriction = forms.ChoiceField(required=False, choices=DataRestriction)
     owner = forms.CharField(required=False)
     person = PersonChoiceField()
     # check_date = forms.DateTimeField(required=False)
-    note = forms.CharField(required=False)
+    note = forms.CharField(required=False,widget=forms.Textarea)
+
+    usbstor_list = forms.CharField(disabled=True,widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['usbstor_list'].initial = self.instance.usbstor_list
+
+class PersonForm(forms.ModelForm):
+    class Meta:
+        model = Person
+        fields = (
+            "first_name",
+            "middle_name",
+            "family_name",
+            "military_rank",
+            "phone_number",
+                )
+
+    first_name = forms.CharField(max_length=100)
+    middle_name = forms.CharField(max_length=100)
+    family_name = forms.CharField(max_length=100)
+    military_rank = forms.CharField(max_length=100)
+    phone_number = forms.CharField(max_length=30)
+
+class StorageForm(forms.ModelForm):
+    class Meta:
+        model = UsbStor
+        fields = (
+            "regid",
+            "regnum",
+            "regdate",
+            "restriction",
+            "stype",
+            "serialnum",
+            "divname",
+            "division",
+            "owner",
+            "person",
+            "active",
+                )
+
+    regid = forms.IntegerField()
+    regnum = forms.CharField(max_length=20)
+    regdate = forms.DateField()
+    serialnum = forms.CharField(max_length=200)
+    divname = forms.CharField(max_length=50)
+    division = DivisionChoiceField()
+    owner = forms.CharField(max_length=50)
+    person = PersonChoiceField()
+    restriction = forms.ChoiceField(required=False, choices=DataRestriction)
+    active = forms.BooleanField()
+    # HDD, SSD, PenDrive, ...
+    stype = forms.CharField(max_length=50)

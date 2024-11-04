@@ -1,5 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Storage devices{% endblock title %}
+
+{% block pagename %}Storage devices{% endblock pagename %}
+
 {% block content %}
-<h1>USB Storage Devices List</h1>
   {% if usbstor_list %}
 <table>
     {% for usd in usbstor_list %}
@@ -16,4 +21,5 @@
   {% else %}
 <p>There are no registered USB storage devices.</p>
   {% endif %}
+  <p><a href="add">Створити новий</a></p>
 {% endblock %}

@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.views.generic import ListView
-from django.views.generic.edit import UpdateView
+from django.views.generic.edit import CreateView, UpdateView
 
 import io
 import json
@@ -15,9 +15,8 @@ import zipfile
 
 from datetime import datetime
 
-#from .models import UsbStor
-from .models import Host
-from .forms import HostForm
+from .models import Division, Host, Person, UsbStor
+from .forms import DivisionForm, HostForm, PersonForm, StorageForm
 
 def index(request):
     html_resp = """<html>
@@ -150,11 +149,11 @@ def host_info_form(request):
         # filename = ziplist
         # filename = json.dumps(csi_data)
         # filename = json.dumps(list(csentry))
-        return render(request, os.path.join('checks','host_info_form.html'), {
-             'filename': filename
-        })
+        # return render(request, os.path.join('checks', 'host_info_form.html'), {
+        #      'filename': filename
+        # })
     else:
-        return render(request, os.path.join('checks','host_info_form.html'), {})
+        return render(request, os.path.join('checks', 'host_info_form.html'), {})
 
 """
         csentries = Host.objects.filter(hostname=hostname)
@@ -252,11 +251,11 @@ def host_update_info_form(request, cssiid=None):
         csentry.cs_model = csdict['model']
         csentry.cs_systemfamily = csdict['systemfamily']
         csentry.check_date = csdict['check_date']
-        csentry.cs_json = csdict['cs_json']
-        csentry.av_json = csdict['av_json']
-        csentry.wa_json = csdict['wa_json']
-        csentry.eset_json = csdict['eset_json']
-        csentry.usb_json = csdict['usb_json']
+        csentry.cs_json = json.loads(csdict['cs_json'])
+        csentry.av_json = json.loads(csdict['av_json'])
+        csentry.wa_json = json.loads(csdict['wa_json'])
+        csentry.eset_json = json.loads(csdict['eset_json'])
+        csentry.usb_json = json.loads(csdict['usb_json'])
         csentry.save()
         del request.session[cssiid]
         return redirect('hosts')
@@ -265,11 +264,35 @@ def host_update_info_form(request, cssiid=None):
         'csdict': csdict
     })
 
+class DivisionCreateView(CreateView):
+    model = Division
+    form_class = DivisionForm
+    # template_name_suffix = "_form"
+    success_url = '.'
+
 class HostUpdateView(UpdateView):
     model = Host
     form_class = HostForm
-    template_name_suffix = "_update_form"
+    # template_name_suffix = "_update_form"
+    success_url = '.'
+
+class PersonCreateView(CreateView):
+    model = Person
+    form_class = PersonForm
+    # template_name_suffix = "_form"
+    success_url = '.'
+
+class PersonUpdateView(UpdateView):
+    model = Person
+    form_class = PersonForm
+    # template_name_suffix = "_form"
     success_url = '.'
 
 #class UsbStorView(ListView):
 #    model = UsbStor
+
+class StorageUpdateView(UpdateView):
+    model = UsbStor
+    form_class = StorageForm
+    # template_name_suffix = "_form"
+    success_url = '.'

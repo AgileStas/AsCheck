@@ -1,5 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Hosts{% endblock title %}
+
+{% block pagename %}Hosts{% endblock pagename %}
+
 {% block content %}
-<h1>Hosts List</h1>
   {% if host_list %}
 <table>
     {% for host in host_list %}

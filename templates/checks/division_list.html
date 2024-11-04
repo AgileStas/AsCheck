@@ -1,3 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Divisions{% endblock title %}
+
+{% block pagename %}Divisions{% endblock pagename %}
+
 {% block content %}
 {% if division_list %}
 <table>
@@ -8,7 +14,7 @@
     </tr>
     {% for d in division_list %}
     <tr>
-        <td>{{ d.int_acro }}</td>
+        <td><a href="{{ d.get_absolute_url }}{{ d.pk }}">{{ d.int_acro }}</a></td>
         <td>{{ d.common_name }}</td>
         <td>{{ d.active }}</td>
     {% endfor %}
@@ -18,4 +24,4 @@
 <p>There are no registered divisions.</p>
 {% endif %}
 <p><a href="add">Створити новий</a></p>
-{% endblock %}
+{% endblock content %}

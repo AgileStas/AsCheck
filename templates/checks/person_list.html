@@ -1,3 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Persons{% endblock title %}
+
+{% block pagename %}Persons{% endblock pagename %}
+
 {% block content %}
 {% if person_list %}
 <table>
@@ -11,15 +17,15 @@
     {% for p in person_list %}
     <tr>
         <td>{{ p.military_rank }}</td>
-        <td>{{ p.family_name }}</td>
+        <td><a href="{{ p.get_absolute_url }}{{ p.pk }}">{{ p.family_name }}</a></td>
         <td>{{ p.first_name }}</td>
         <td>{{ p.middle_name }}</td>
         <td>{{ p.phone_number }}</td>
-    {% endfor %}
     </tr>
+    {% endfor %}
 </table>
 {% else %}
 <p>There are no registered persons.</p>
 {% endif %}
 <p><a href="add">Створити новий</a></p>
-{% endblock %}
+{% endblock content %}
