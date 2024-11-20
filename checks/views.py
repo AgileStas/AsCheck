@@ -267,7 +267,11 @@ def host_update_info_form(request, cssiid=None):
 class DivisionCreateView(CreateView):
     model = Division
     form_class = DivisionForm
-    # template_name_suffix = "_form"
+    success_url = '.'
+
+class DivisionUpdateView(UpdateView):
+    model = Division
+    form_class = DivisionForm
     success_url = '.'
 
 class HostUpdateView(UpdateView):
@@ -290,6 +294,12 @@ class PersonUpdateView(UpdateView):
 
 #class UsbStorView(ListView):
 #    model = UsbStor
+
+class StorageCreateView(CreateView):
+    model = UsbStor
+    form_class = StorageForm
+    # template_name_suffix = "_form"
+    success_url = '.'
 
 class StorageUpdateView(UpdateView):
     model = UsbStor

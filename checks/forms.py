@@ -96,6 +96,7 @@ class StorageForm(forms.ModelForm):
             "owner",
             "person",
             "active",
+            "note",
                 )
 
     regid = forms.IntegerField()
@@ -103,10 +104,11 @@ class StorageForm(forms.ModelForm):
     regdate = forms.DateField()
     serialnum = forms.CharField(max_length=200)
     divname = forms.CharField(max_length=50)
-    division = DivisionChoiceField()
+    division = DivisionChoiceField(required=False)
     owner = forms.CharField(max_length=50)
-    person = PersonChoiceField()
+    person = PersonChoiceField(required=False)
     restriction = forms.ChoiceField(required=False, choices=DataRestriction)
-    active = forms.BooleanField()
+    active = forms.BooleanField(required=False)
     # HDD, SSD, PenDrive, ...
     stype = forms.CharField(max_length=50)
+    note = forms.Textarea()

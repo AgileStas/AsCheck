@@ -5,16 +5,21 @@
 {% block pagename %}Storage devices{% endblock pagename %}
 
 {% block content %}
+<div>
+  <p>Get USB storage device identifier (serial number is part of it)</p>
+  <code>wmic path win32_pnpentity where "DeviceID LIKE 'USBSTOR%'" get DeviceID</code>
+</div>
   {% if usbstor_list %}
 <table>
     {% for usd in usbstor_list %}
     <tr>
-        <td><a href="{{ usd.get_absolute_url }}{{ usd.pk }}">{{ usd.regid }}</a></td>
-	<td>{{ usd.regnum }}</td>
-	<td>{{ usd.regdate }}</td>
-	<td>{{ usd.serialnum }}</td>
-	<td>{{ usd.divname }}</td>
-	<td>{{ usd.owner }}</td>
+      <td><a href="{{ usd.get_absolute_url }}{{ usd.pk }}">{{ usd.regid }}</a></td>
+      <td>{{ usd.restriction }}</td>
+      <td>{{ usd.regnum }}</td>
+      <td>{{ usd.regdate }}</td>
+      <td>{{ usd.serialnum }}</td>
+      <td>{{ usd.divname }}</td>
+      <td>{{ usd.owner }}</td>
     </tr>
     {% endfor %}
 </table>

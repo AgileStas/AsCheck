@@ -1,4 +1,4 @@
-import sys
+import datetime, sys
 
 from django.db import models
 
@@ -36,9 +36,25 @@ class UsbStor(models.Model):
     restriction = models.SmallIntegerField(null=False, default=DataRestriction.UNR, choices=DataRestriction)
     active = models.BooleanField(null=False, default=True)
     # HDD, SSD, PenDrive, ...
-    stype = models.CharField(max_length=50,null=False, default='USB')
+    stype = models.CharField(max_length=50, null=False, default='USB')
+    # demolish_date = models.DateField(null=True)
+    note = models.TextField(default='', null=False)
 
 class Host(models.Model):
+    class UsbStor:
+        def __init__(self, last_modified: datetime.date, reg_num: str, restriction: int, serial_number: str):
+            self.last_modified = last_modified
+            self.reg_num = reg_num
+            self.restriction = restriction
+            self.serial_number = serial_number
+
+        def __str__(self):
+            line_sn_t = '{lm}\t{rn}\t{res}\t{sn}'
+            return line_sn_t.format(lm=self.last_modified,
+                                    rn=self.reg_num,
+                                    res=self.restriction,
+                                    sn=self.serial_number)
+
     # id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, hostname TEXT NOT NULL, division TEXT, serialnumber TEXT, cs_manufacturer TEXT, cs_model TEXT, cs_systemfamily TEXT, restriction SHORT INTEGER, owner TEXT
     hostname = models.TextField()
     division = models.ForeignKey(Division, on_delete=models.CASCADE, null=True)
@@ -82,26 +98,26 @@ class Host(models.Model):
                         if el['Service'] == 'USBSTOR':
                             sn = el['PSChildName']
                             lm = el['Item-LastModified']
-                            line_sn_t = '{lm}\t{pk}\t{res}\t{sn}'
-                            line_sn = ''
-                            print("Filtering UsbStor for '{}'".format(sn), file=sys.stderr)
+                            line_sn = None
+                            # print("Filtering UsbStor for '{}'".format(sn), file=sys.stderr)
                             try:
                                 # rus = UsbStor.objects.get(serialnum__iexact=sn)
                                 # rus = UsbStor.objects.filter(serialnum__icontains=sn)
                                 rus = UsbStor.objects.filter(serialnum__iexact=sn)
                                 print(rus, file=sys.stderr)
                                 if not rus:
-                                    line_sn = line_sn_t.format(lm=lm, pk='------', res='-', sn=sn)
+                                    line_sn = Host.UsbStor(lm, '------', -1, sn)
                                 else:
                                     print(rus[0], file=sys.stderr)
-                                    line_sn = line_sn_t.format(lm=lm, pk=rus[0].regnum, res=rus[0].restriction, sn=sn)
+                                    line_sn = Host.UsbStor(lm, rus[0].regnum, rus[0].restriction, sn)
                             except:
-                                line_sn = line_sn_t.format(lm=lm, pk='!!!!!!', res='-', sn=sn)
+                                line_sn = Host.UsbStor(lm, '!!!!!!', -1, sn)
 
-                            usl.append(line_sn)
+                            if line_sn:
+                                usl.append(line_sn)
 
         # return usbstor_list_json
-        return '\n'.join(usl)
+        return '\n'.join(str(x) for x in usl)
 
 # Windows Product Key
 class WPK(models.Model):
