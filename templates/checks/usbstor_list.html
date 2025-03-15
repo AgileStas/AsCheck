@@ -6,8 +6,11 @@
 
 {% block content %}
 <div>
-  <p>Get USB storage device identifier (serial number is part of it)</p>
-  <code>wmic path win32_pnpentity where "DeviceID LIKE 'USBSTOR%'" get DeviceID</code>
+  <p>Get USB storage device identifier (serial number is part of it):<br/>
+  <code>wmic path win32_pnpentity where "DeviceID LIKE 'USBSTOR%'" get DeviceID</code><br/>
+or<br/>
+  <code>Get-PnpDevice -Class DiskDrive -PresentOnly | select FriendlyName,PNPDeviceID</code></p>
+  <p>Physical size: <code>Get-PhysicalDisk</code></p>
 </div>
   {% if usbstor_list %}
 <table>
