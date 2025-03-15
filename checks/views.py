@@ -43,24 +43,35 @@ def enum_usb_to_json(hizip: zipfile.ZipFile, filename: str) -> str:
     lines = eu_io.readlines()
     curitem = {}
     items = []
+    curkey = ''
     for line in lines:
         if '--- Item-Break ---' == line.strip():
+            curkey = ''
             if curitem:
                 items.append(curitem)
                 curitem = {}
         elif not line.strip():
-            continue
+            pass
         elif ':' not in line:
-            # TODO throw error?
-            print('--- Unable to parse line, skipping: "' + line + '"', file=sys.stderr)
-            continue
+            if curkey:
+                if re.match(r'\s', line):
+                    v = curitem[curkey]
+                    v += line.strip()
+                    curitem[curkey] = v
+                else:
+                    # TODO throw error?
+                    print('--- Unable to parse line, skipping: "' + line + '"', file=sys.stderr)
+            else:
+                # TODO throw error?
+                print('--- Unable to parse line, skipping: "' + line + '"', file=sys.stderr)
         else:
             kvlist = line.split(':', 1)
             if len(kvlist) != 2:
                 # TODO throw error?
                 print('--- Unable to parse line to KV pair, skipping: "' + line + '"', file=sys.stderr)
-                continue
-            curitem[kvlist[0].strip()] = kvlist[1].strip()
+            else:
+                curkey = kvlist[0].strip()
+                curitem[curkey] = kvlist[1].strip()
 
     return json.dumps(items)
 
@@ -79,6 +90,30 @@ def kv_info_from_zip(hizip: zipfile.ZipFile, filename: str) -> dict[str, str]:
             csi_value = found.group(2).strip()
             kv_data[csi_key] = csi_value
     return kv_data
+
+def kv_list_from_zip(hizip: zipfile.ZipFile, filename: str) -> list[dict[str, str]]:
+    kv_list = []
+    kv_data = {}
+    split_by_empty_line = True
+    csi_bytes = hizip.read(filename)
+    csi_io = io.StringIO(csi_bytes.decode('utf-16'))
+    lines = csi_io.readlines()
+    for line in lines:
+        # print(line)
+        if not line.strip():
+            if split_by_empty_line:
+                if kv_data:
+                    kv_list.append(kv_data)
+                    kv_data = {}
+        else:
+            found = re.search(r"([^:]+)\s*:\s*(.*)$", line)
+            # found = re.search(r"(.+):(.*)", line)
+            # print(found)
+            if found:
+                csi_key = found.group(1).strip()
+                csi_value = found.group(2).strip()
+                kv_data[csi_key] = csi_value
+    return kv_list
 
 def host_info_form(request):
     '''Get computer system information as ZIP file, try to match existing host record, store updated host information'''
@@ -123,6 +158,10 @@ def host_info_form(request):
                     wai_data = kv_info_from_zip(hizip, zipentry)
                 elif zipentry.endswith('/EnumUsb.txt'):
                     usb_json = enum_usb_to_json(hizip, zipentry)
+                elif zipentry.endswith('/NetAdapter.txt'):
+                    net_adapter_data = kv_list_from_zip(hizip, zipentry)
+                elif zipentry.endswith('/PhysicalDisk.txt'):
+                    physical_disk_data = kv_list_from_zip(hizip, zipentry)
 
         fs.delete(filename)
 
@@ -138,6 +177,8 @@ def host_info_form(request):
         csdict['wa_json'] = json.dumps(wai_data)
         csdict['eset_json'] = json.dumps(eset_data)
         csdict['usb_json'] = usb_json
+        csdict['net_adapters_json'] = json.dumps(net_adapter_data)
+        csdict['physical_disks_json'] = json.dumps(physical_disk_data)
         cssiid = 'csentry%s' % random.randint(0, 999999)
         # request.session[session_key] = csentry
         request.session[cssiid] = csdict
@@ -256,6 +297,8 @@ def host_update_info_form(request, cssiid=None):
         csentry.wa_json = json.loads(csdict['wa_json'])
         csentry.eset_json = json.loads(csdict['eset_json'])
         csentry.usb_json = json.loads(csdict['usb_json'])
+        csentry.net_adapters_json = json.loads(csdict['net_adapters_json'])
+        csentry.physical_disks_json = json.loads(csdict['physical_disks_json'])
         csentry.save()
         del request.session[cssiid]
         return redirect('hosts')

@@ -75,6 +75,10 @@ class Host(models.Model):
     eset_json = models.JSONField(null=True)
     # Enum USB
     usb_json = models.JSONField(null=True)
+    # Network adapters
+    net_adapters_json = models.JSONField(null=True)
+    # Physical disks
+    physical_disks_json = models.JSONField(null=True)
     # Date and time of the latest check
     check_date = models.DateTimeField(null=True)
     # Notes about this host
@@ -104,11 +108,11 @@ class Host(models.Model):
                                 # rus = UsbStor.objects.get(serialnum__iexact=sn)
                                 # rus = UsbStor.objects.filter(serialnum__icontains=sn)
                                 rus = UsbStor.objects.filter(serialnum__iexact=sn)
-                                print(rus, file=sys.stderr)
+                                #print(rus, file=sys.stderr)
                                 if not rus:
                                     line_sn = Host.UsbStor(lm, '------', -1, sn)
                                 else:
-                                    print(rus[0], file=sys.stderr)
+                                    #print(rus[0], file=sys.stderr)
                                     line_sn = Host.UsbStor(lm, rus[0].regnum, rus[0].restriction, sn)
                             except:
                                 line_sn = Host.UsbStor(lm, '!!!!!!', -1, sn)
