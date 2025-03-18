@@ -58,7 +58,7 @@ class HostForm(forms.ModelForm):
     # check_date = forms.DateTimeField(required=False)
     note = forms.CharField(required=False,widget=forms.Textarea)
 
-    usbstor_list = forms.CharField(disabled=True,widget=forms.Textarea)
+    usbstor_list = forms.CharField(required=False,disabled=True,widget=forms.Textarea)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
