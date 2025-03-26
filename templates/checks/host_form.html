@@ -5,8 +5,39 @@
 {% block pagename %}Add/Update computer system{% endblock pagename %}
 
 {% block content %}
+{% load static %}
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/bootstrap5.modal.forms.min.js' %}"></script>
+
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', (e) => {
+        modalForm(document.getElementById('select-storage'), {
+            formURL: "{% url 'select_storage' form.instance.id %}"
+        })
+    });
+</script>
+
+<div>
+    <p></p>
+    <a href="{% url 'host_storage_policy' form.instance.id %}">Download host allowed storage local group policy</a>
+    <p></p>
+</div>
+
 <form method="post">{% csrf_token %}
     {{ form.as_p }}
+
+    <!-- <input type="button" id="select-storage" value="Select storage devices"> -->
+    <button id="select-storage" class="btn btn-primary" type="button" name="button">Select storage devices</button>
+    <div class="modal fade" tabindex="-1" role="dialog" id="modal">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content"></div>
+        </div>
+    </div>
+        
+    <br/>
+    
     <input type="submit" value="Update">
 </form>
+
 {% endblock content %}

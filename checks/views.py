@@ -1,22 +1,31 @@
 from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
+from django.http.response import FileResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
-from django.views.generic import ListView
+from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView
+
+from bootstrap_modal_forms.generic import BSModalFormView, BSModalUpdateView
+
+# import registrypol
+from registrypol.policy import RegistryPolicy
+from registrypol.values import RegistryValue
 
 import io
 import json
 import os
+# import pathlib
 import random
 import re
 import sys
+import uuid
 import zipfile
 
 from datetime import datetime
 
 from .models import Division, Host, Person, UsbStor
-from .forms import DivisionForm, HostForm, PersonForm, StorageForm
+from .forms import DivisionForm, HostForm, HostStorageForm, PersonForm, StorageForm
 
 def index(request):
     html_resp = """<html>
@@ -238,7 +247,6 @@ def host_info_form(request):
             # csentry.save()
 """
 
-from django.http import Http404
 def host_update_info_form(request, cssiid=None):
     csdict: dict
     if not cssiid:
@@ -322,6 +330,100 @@ class HostUpdateView(UpdateView):
     form_class = HostForm
     # template_name_suffix = "_update_form"
     success_url = '.'
+
+    def get_form(self, *args, **kwargs):
+        form = super().get_form(*args, **kwargs)
+        if (form.is_bound == False):
+            host = Host.objects.get(id = self.kwargs['pk'])
+            form.fields['allowed_storage'].queryset = host.allowed_storage.all()
+        return form
+
+class DownloadHostStoragePolicy(DetailView):
+    model = Host
+
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        host = self.object
+        # print(host)
+
+        policy = RegistryPolicy(
+            values=[
+                RegistryValue(
+                    key=r'Software\\Policies\\Microsoft\Windows\\DeviceInstall\\Restrictions',
+                    value='DenyRemovableDevices',
+                    type=4,
+                    size=4,
+                    data=b'\x01\x00\x00\x00'
+                ),
+                RegistryValue(
+                    key=r'Software\\Policies\\Microsoft\Windows\\DeviceInstall\\Restrictions',
+                    value='AllowDeviceClasses',
+                    type=4,
+                    size=4,
+                    data=b'\x01\x00\x00\x00'
+                ),
+                RegistryValue(
+                    key=r'Software\\Policies\\Microsoft\Windows\\DeviceInstall\\Restrictions\\AllowDeviceClasses',
+                    value='**DelVals.',
+                    type=1,
+                    size=4,
+                    data=b' \x00\x00\x00'
+                ),
+            ]
+        )
+        # for idx, stor in enumerate(host.allowed_storage.all()):
+        idx = 0
+        # print('--------------', host.allowed_storage)
+        # print('++++++++++++++', host.allowed_storage.all())
+        for stor in host.allowed_storage.all():
+            # print(stor)
+            vid = stor.vendor
+            pid = stor.product
+            sn = stor.serialnum
+            # print('==============', sn)
+            stor_bytes = f'USB\\VID_{vid:04x}&PID_{pid:04x}\\{sn}'.encode("utf-16le")
+            stor_bytes += b'\x00'
+            stor_bytes += b'\x00'
+            # print('##############', len(f'USB\\VID_{vid:04x}&PID_{pid:04x}\\{sn}'), len(stor_bytes))
+            rv = RegistryValue(
+                key=r'Software\\Policies\\Microsoft\Windows\\DeviceInstall\\Restrictions\\AllowDeviceClasses',
+                value=str(idx+1),
+                type='REG_SZ',
+                size=len(stor_bytes),
+                data=stor_bytes
+            )
+            policy.values.append(rv)
+            idx += 1
+
+        policy_buffer = io.BytesIO()
+        import registrypol
+        registrypol.dump(policy=policy, stream=policy_buffer)
+
+        zipobj = io.BytesIO()
+        diruuid = '{' + str(uuid.uuid4()).upper() + '}'
+        with zipfile.ZipFile(zipobj, "w") as pizip:
+            mdirstr = diruuid + '/' + "DomainSysvol" + '/' + "GPO" + '/' + "Machine"
+            # udirstr = diruuid + '/' + "DomainSysvol" + '/' + "GPO" + '/' + "User"
+            pizip.mkdir(mdirstr)
+            pizip.writestr(mdirstr + '/' + "registry.pol", policy_buffer.getvalue())
+            pizip.close()
+
+        zipobj.seek(0)
+        r = FileResponse(zipobj,
+                        as_attachment=True,
+                        filename=f'{host.id}.zip')
+
+        return r
+
+class HostStorageUpdateView(BSModalUpdateView):
+#class HostStorageUpdateView(BSModalFormView):
+#class HostStorageUpdateView(UpdateView):
+    model = Host
+    form_class = HostStorageForm
+    template_name = "checks/host_storage_popup.html"
+    # template_name_suffix = "_update_form"
+    # template_name_suffix = "_storage_popup"
+    success_url = '..'
 
 class PersonCreateView(CreateView):
     model = Person

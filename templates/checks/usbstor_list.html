@@ -17,9 +17,12 @@ or<br/>
     {% for usd in usbstor_list %}
     <tr>
       <td><a href="{{ usd.get_absolute_url }}{{ usd.pk }}">{{ usd.regid }}</a></td>
+      <td>{{ usd.active }}</td>
       <td>{{ usd.restriction }}</td>
       <td>{{ usd.regnum }}</td>
       <td>{{ usd.regdate }}</td>
+      <td>{{ usd.vendor | stringformat:"04X" }}</td>
+      <td>{{ usd.product | stringformat:"04X" }}</td>
       <td>{{ usd.serialnum }}</td>
       <td>{{ usd.divname }}</td>
       <td>{{ usd.owner }}</td>

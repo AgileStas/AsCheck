@@ -39,9 +39,11 @@ class UsbStor(models.Model):
     stype = models.CharField(max_length=50, null=False, default='USB')
     # demolish_date = models.DateField(null=True)
     note = models.TextField(default='', null=False)
+    vendor = models.IntegerField(null=False, default=0)
+    product = models.IntegerField(null=False, default=0)
 
 class Host(models.Model):
-    class UsbStor:
+    class _UsbStor:
         def __init__(self, last_modified: datetime.date, reg_num: str, restriction: int, serial_number: str):
             self.last_modified = last_modified
             self.reg_num = reg_num
@@ -86,6 +88,9 @@ class Host(models.Model):
     # Host is currently in use
     active = models.BooleanField(null=False, default=True)
 
+    # External storage devices that are allowed within this host
+    allowed_storage = models.ManyToManyField(UsbStor)
+
     @property
     def usbstor_list(self):
         usbstor_list_json = self.usb_json
@@ -110,12 +115,12 @@ class Host(models.Model):
                                 rus = UsbStor.objects.filter(serialnum__iexact=sn)
                                 #print(rus, file=sys.stderr)
                                 if not rus:
-                                    line_sn = Host.UsbStor(lm, '------', -1, sn)
+                                    line_sn = Host._UsbStor(lm, '------', -1, sn)
                                 else:
                                     #print(rus[0], file=sys.stderr)
-                                    line_sn = Host.UsbStor(lm, rus[0].regnum, rus[0].restriction, sn)
+                                    line_sn = Host._UsbStor(lm, rus[0].regnum, rus[0].restriction, sn)
                             except:
-                                line_sn = Host.UsbStor(lm, '!!!!!!', -1, sn)
+                                line_sn = Host._UsbStor(lm, '!!!!!!', -1, sn)
 
                             if line_sn:
                                 usl.append(line_sn)

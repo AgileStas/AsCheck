@@ -1,6 +1,10 @@
 from django import forms
+from django.contrib.admin import widgets
 
 from .models import DataRestriction, Division, Host, Person, UsbStor
+
+from bootstrap_modal_forms.forms import BSModalModelForm
+
 
 class DivisionForm(forms.ModelForm):
     class Meta:
@@ -29,6 +33,53 @@ class PersonChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         return "%s %s %s, %s" % (obj.family_name, obj.first_name, obj.middle_name, obj.military_rank)
 
+class StorageChoiceField(forms.ModelMultipleChoiceField):
+    def __init__(self, *args, **kwargs):
+        super(StorageChoiceField, self).__init__(
+            # queryset=UsbStor.objects.all(),
+            queryset=UsbStor.objects.filter(active=True),
+            # widget=widgets.FilteredSelectMultiple("verbose name", is_stacked=False),
+            widget=forms.SelectMultiple(attrs={'size':'10'}),
+            *args,
+            **kwargs
+        )
+        # widget=forms.CheckboxSelectMultiple(attrs={'size':'10'}),
+
+    def label_from_instance(self, obj):
+        return "%s (%s) :: %s" % (obj.regnum, obj.serialnum if len(obj.serialnum) < 15 else obj.serialnum[:12] + "...", obj.division.int_acro if obj.division else "???")
+
+'''
+class StorageListField(forms.CheckboxSelectMultiple):
+    def __init__(self, *args, **kwargs):
+        super(StorageListField, self).__init__(
+            # queryset=UsbStor.objects.all(),
+            # queryset=UsbStor.objects.filter(active=True),
+            # widget=widgets.FilteredSelectMultiple("verbose name", is_stacked=False),
+            # widget=forms.CheckboxSelectMultiple(),
+            *args,
+            **kwargs
+        )
+        # widget=forms.CheckboxSelectMultiple(attrs={'size':'10'}),
+
+    def label_from_instance(self, obj):
+        return "%s (%s) :: %s" % (obj.regnum, obj.serialnum if len(obj.serialnum) < 15 else obj.serialnum[:12] + "...", obj.division.int_acro if obj.division else "???")
+'''
+
+#from bootstrap_modal_forms.mixins import PopRequestMixin, CreateUpdateAjaxMixin
+#class HostForm(PopRequestMixin, CreateUpdateAjaxMixin, forms.ModelForm):
+class HostStorageForm(BSModalModelForm):
+    class Meta:
+        model = Host
+        fields = (
+            "allowed_storage",
+                )
+
+    allowed_storage = StorageChoiceField()
+
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     self.fields['usbstor_list'].initial = self.instance.usbstor_list
+
 class HostForm(forms.ModelForm):
     class Meta:
         model = Host
@@ -44,6 +95,7 @@ class HostForm(forms.ModelForm):
             "person",
             "note",
             # "usbstor_list",
+            "allowed_storage",
                 )
 
     hostname = forms.CharField(max_length=100)
@@ -60,9 +112,20 @@ class HostForm(forms.ModelForm):
 
     usbstor_list = forms.CharField(required=False,disabled=True,widget=forms.Textarea)
 
+    allowed_storage = forms.ModelMultipleChoiceField(
+        queryset=UsbStor.objects.all(),
+        widget=forms.CheckboxSelectMultiple
+    )
+    # allowed_storage = StorageListField()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['usbstor_list'].initial = self.instance.usbstor_list
+        self.fields['allowed_storage'].label_from_instance = self.label_from_instance_01
+
+    @staticmethod
+    def label_from_instance_01(obj):
+        return obj.regnum        
 
 class PersonForm(forms.ModelForm):
     class Meta:
@@ -90,6 +153,8 @@ class StorageForm(forms.ModelForm):
             "regdate",
             "restriction",
             "stype",
+            "vendor",
+            "product",
             "serialnum",
             "divname",
             "division",
@@ -102,13 +167,16 @@ class StorageForm(forms.ModelForm):
     regid = forms.IntegerField()
     regnum = forms.CharField(max_length=20)
     regdate = forms.DateField()
+    vendor = forms.IntegerField()
+    product = forms.IntegerField()
     serialnum = forms.CharField(max_length=200)
     divname = forms.CharField(max_length=50)
     division = DivisionChoiceField(required=False)
     owner = forms.CharField(max_length=50)
     person = PersonChoiceField(required=False)
     restriction = forms.ChoiceField(required=False, choices=DataRestriction)
-    active = forms.BooleanField(required=False)
+    # active = forms.BooleanField(required=False)
+    active = forms.BooleanField(widget=forms.CheckboxInput)
     # HDD, SSD, PenDrive, ...
     stype = forms.CharField(max_length=50)
     note = forms.Textarea()

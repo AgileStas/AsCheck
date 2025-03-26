@@ -2,3 +2,7 @@ db.sqlite3
 .venv
 __pycache__
 checks/static/AsCheck.ps1
+regpol.py
+checks/static/css/bootstrap.css
+checks/static/js/bootstrap.bundle.min.js
+checks/static/js/bootstrap.min.js
